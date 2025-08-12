@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+        #shorten-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        #url-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .qrcode-container {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: white;
+            display: inline-block;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .short-url {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 1rem 0;
+            font-size: 18px;
+        }
+        .short-url a {
+            color: #3498db;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .short-url a:hover {
+            text-decoration: underline;
+        }
+        .copy-btn {
+            background-color: #2ecc71;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        .copy-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <form id="shorten-form">
+            <input type="text" id="url-input" placeholder="Enter a long URL" size="50">
+            <button type="submit">Shorten</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('shorten-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('url-input').value;
+            const response = await fetch('http://localhost:3000/api/short-urls', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url }),
+            });
+
+            const resultDiv = document.getElementById('result');
+            if (response.ok) {
+                const data = await response.json();
+                const shortUrl = `http://localhost:3000/${data.code}`;
+                resultDiv.innerHTML = `
+                    <h3>您的短網址已建立！</h3>
+                    <div class="short-url">
+                        <span>短網址：</span>
+                        <a href="${shortUrl}" target="_blank">${shortUrl}</a>
+                    </div>
+                    <div class="qrcode-container">
+                        <p>掃描 QR Code 開啟網址</p>
+                        <img src="http://localhost:3000/api/qrcode/${data.code}" alt="QR Code" style="width: 200px; height: 200px;">
+                    </div>
+                    <button class="copy-btn" onclick="copyToClipboard('${shortUrl}')">複製短網址</button>
+                `;
+            } else {
+                const error = await response.json();
+                resultDiv.innerHTML = `<p>Error: ${error.error.message}</p>`;
+            }
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>

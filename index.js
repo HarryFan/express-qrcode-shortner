@@ -2,12 +2,24 @@
 const express = require('express');
 const qrcode = require('qrcode');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const port = 3000;
 
-app.use(cors());
+// 配置 CORS
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// 解析 JSON 請求體
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 提供靜態文件
+app.use(express.static(path.join(__dirname, 'public')));
 
 const store = new Map();
 
@@ -28,7 +40,15 @@ app.get('/', (req, res) => {
 
 // 建立短碼
 app.post('/api/short-urls', async (req, res) => {
+  console.log('收到請求:', req.body);
   const { url } = req.body;
+  
+  if (!url) {
+    console.log('缺少 URL 參數');
+    return res.status(400).json({
+      error: { code: 'ERR_MISSING_URL', message: '請提供要縮短的網址' },
+    });
+  }
 
   if (!isValidUrl(url)) {
     return res.status(400).json({
@@ -89,7 +109,7 @@ app.get('/:code', (req, res) => {
   res.redirect(302, shortUrlData.longUrl);
 });
 
-// (選配) 生成 QR Code
+// 生成 QR Code
 app.get('/api/qrcode/:code', async (req, res) => {
     const { code } = req.params;
     const shortUrlData = store.get(code);
@@ -106,27 +126,12 @@ app.get('/api/qrcode/:code', async (req, res) => {
         res.setHeader('Content-Type', 'image/png');
         res.send(qrCodeImage);
     } catch (err) {
+        console.error('生成 QR Code 時出錯:', err);
         res.status(500).json({ error: 'Failed to generate QR code' });
     }
 });
 
-app.get('/favicon.ico', (req, res) => res.status(204));
-
-// 短碼轉址
-app.get('/:code', (req, res) => {
-  const { code } = req.params;
-  const shortUrlData = store.get(code);
-
-  if (!shortUrlData) {
-    return res.status(404).json({
-      error: { code: 'ERR_NOT_FOUND', message: '短碼不存在' },
-    });
-  }
-
-  shortUrlData.hitCount++;
-  res.redirect(302, shortUrlData.longUrl);
-});
-
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
