@@ -1,0 +1,31 @@
+
+### 建立短碼
+POST http://localhost:3000/api/short-urls
+Content-Type: application/json
+
+{
+  "url": "https://www.google.com"
+}
+
+### 查詢短碼資訊
+GET http://localhost:3000/api/short-urls/{{code}}
+
+### 短碼轉址
+GET http://localhost:3000/{{code}}
+
+### 建立一個無效的網址
+POST http://localhost:3000/api/short-urls
+Content-Type: application/json
+
+{
+  "url": "this is not a url"
+}
+
+### 查詢一個不存在的短碼
+GET http://localhost:3000/api/short-urls/nonexistentcode
+
+### 轉址一個不存在的短碼
+GET http://localhost:3000/nonexistentcode
+
+### 取得 QR code
+GET http://localhost:3000/api/qrcode/{{code}}
