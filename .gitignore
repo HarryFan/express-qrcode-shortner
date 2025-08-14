@@ -1,0 +1,145 @@
+# 依賴目錄
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# 環境變數
+.env
+.env.*
+!.env.example
+
+# 日誌
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 運行時數據
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 目錄
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 測試覆蓋率
+coverage/
+.nyc_output/
+
+# 系統文件
+.DS_Store
+Thumbs.db
+
+# 本地開發文件
+*.local
+
+# 調試日誌
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 構建目錄
+dist/
+build/
+
+# 編輯器目錄和文件
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# 臨時文件
+*.tmp
+*.bak
+*.swp
+*~.nib
+
+# 本地開發環境
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 調試日誌
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 測試快照
+__snapshots__/
+
+# 可執行文件
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+
+# 壓縮文件
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.tgz
+
+# 文檔文件
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.odt
+*.ods
+*.odp
+
+# 圖片文件
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+*.svg
+*.webp
+
+# 音視頻文件
+*.mp3
+*.wav
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.flv
+*.wmv
+*.m4a
+*.m4v
+*.3gp
+*.3g2
+
+# 其他
+.cache/
+.vercel
+.next
+.nuxt
+.cache/
+.temp/
+.tmp/

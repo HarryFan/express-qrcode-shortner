@@ -1,25 +1,72 @@
 
-### 建立短碼
-POST http://localhost:3000/api/short-urls
+@baseUrl = http://localhost:3000
+
+### 1. 健康檢查
+GET {{baseUrl}}/health
+
+### 2. 建立短網址
+# @name createShortUrl
+POST {{baseUrl}}/api/short-urls
 Content-Type: application/json
 
 {
   "url": "https://www.google.com"
 }
 
-### 查詢短碼資訊
-GET http://localhost:3000/api/short-urls/{{code}}
+### 3. 使用上一步的回應中的 code 變數
+@code = {{createShortUrl.response.body.$.code}}
 
-### 短碼轉址
-GET http://localhost:3000/{{code}}
+### 4. 查詢短碼資訊
+GET {{baseUrl}}/api/short-urls/{{code}}
 
-### 建立一個無效的網址
-POST http://localhost:3000/api/short-urls
+### 5. 短碼轉址 (應該會 302 重定向)
+GET {{baseUrl}}/{{code}}
+
+### 6. 測試無效的 URL 格式
+POST {{baseUrl}}/api/short-urls
 Content-Type: application/json
 
 {
   "url": "this is not a url"
 }
+
+### 7. 測試無效的 URL 格式
+POST {{baseUrl}}/api/short-urls
+Content-Type: application/json
+
+{
+  "url": ""
+}
+
+### 8. 查詢不存在的短碼
+GET {{baseUrl}}/api/short-urls/nonexist
+
+### 9. 測試建立重複的 URL
+POST {{baseUrl}}/api/short-urls
+Content-Type: application/json
+
+{
+  "url": "https://www.google.com"
+}
+
+### 10. 測試無效的請求主體
+POST {{baseUrl}}/api/short-urls
+Content-Type: application/json
+
+{
+  "invalidField": "test"
+}
+
+### 11. 測試 MongoDB 連接 (管理員用)
+GET {{baseUrl}}/admin/db-stats
+
+### 12. 列出所有短網址 (開發用)
+GET {{baseUrl}}/admin/urls
+
+### 13. 刪除短網址 (管理員用)
+# DELETE {{baseUrl}}/admin/urls/{{code}}
+# Content-Type: application/json
+# Authorization: Bearer your-admin-token
 
 ### 查詢一個不存在的短碼
 GET http://localhost:3000/api/short-urls/nonexistentcode

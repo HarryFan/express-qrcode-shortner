@@ -2,11 +2,12 @@
 
 ## 系統設計文件（SDD）
 
-**專案名稱**：In-Memory 短網址與 QR Code 服務
-**版本**：v1.0
-**日期**：2025-08-06
+**專案名稱**：短網址與 QR Code 服務
+**版本**：v2.0
+**日期**：2025-08-14
 **開發語言 / 框架**：Node.js (Express)
-**資料儲存方式**：記憶體 Map（非持久化）
+**資料庫**：MongoDB (Mongoose ODM)
+**資料儲存方式**：持久化儲存
 
 ---
 
@@ -14,7 +15,7 @@
 
 本系統提供使用者將長網址轉換為短網址，並可生成對應的 QR Code。
 同時支援查詢短碼資訊與短碼轉址功能，適合做教學與快速 Demo。
-由於採用 In-Memory 儲存，伺服器重啟後資料會清空。
+採用 MongoDB 進行持久化儲存，確保資料在伺服器重啟後仍然存在。
 
 ---
 
@@ -119,22 +120,25 @@ Location: https://example.com/hello-world
 
 ---
 
-### 4. 資料模型
+### 4. 資料結構
 
-```js
+#### 4.1 資料庫模型
+
+```javascript
 {
-  code: String,          // 短碼
-  longUrl: String,       // 原始網址
-  createdAt: Date,       // 建立時間
-  hitCount: Number       // 命中次數
+  _id: ObjectId,        // MongoDB 唯一識別碼
+  code: string,         // 短碼（6位隨機字串），建立唯一索引
+  longUrl: string,      // 原始網址
+  hitCount: number,     // 點擊次數，預設為 0
+  createdAt: Date,      // 建立時間，自動設置
+  __v: number           // 版本號
 }
 ```
 
-儲存在伺服器記憶體的 Map：
+#### 4.2 索引
 
-```js
-const store = new Map();
-```
+1. `code` 欄位：唯一索引，確保短碼不重複
+2. `createdAt` 欄位：TTL 索引，可選設置文檔過期時間
 
 ---
 
