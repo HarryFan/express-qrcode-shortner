@@ -120,7 +120,27 @@ GET /{code}
 | NODE_ENV | 否 | development | 運行環境 |
 | MONGODB_URI | 是 | - | MongoDB 連接字串 |
 
-### 使用 PM2 部署
+### 本地開發部署
+
+#### 直接運行
+```bash
+# 開發模式（使用 nodemon 自動重啟）
+npm run dev
+
+# 生產模式
+npm start
+```
+
+#### 使用 PM2 進程管理器
+
+PM2 是一個 Node.js 應用程序的**進程管理器**，它可以：
+- 自動重啟崩潰的應用程序
+- 提供負載均衡（多實例運行）
+- 監控應用程序狀態和資源使用
+- 管理應用程序日誌
+- 設置開機自啟動
+
+**注意**：PM2 本身不是部署平台，而是在服務器上管理 Node.js 應用程序的工具。
 
 ```bash
 # 全局安裝 PM2
@@ -129,12 +149,118 @@ npm install -g pm2
 # 啟動應用
 pm2 start index.js --name "url-shortener"
 
-# 設置開機自啟
-pm2 startup
-pm2 save
+# 查看運行狀態
+pm2 status
 
 # 查看日誌
 pm2 logs url-shortener
+
+# 重啟應用
+pm2 restart url-shortener
+
+# 停止應用
+pm2 stop url-shortener
+
+# 設置開機自啟（僅限 Linux/macOS 服務器）
+pm2 startup
+pm2 save
+
+# 刪除應用
+pm2 delete url-shortener
+```
+
+### 生產環境部署
+
+要讓其他人能夠訪問你的短網址服務，你需要將應用部署到公網服務器上：
+
+#### 1. 雲服務器部署
+- **AWS EC2**：Amazon 的雲服務器
+- **Google Cloud Compute Engine**：Google 的雲服務器
+- **DigitalOcean Droplets**：簡單易用的 VPS
+- **Linode**：高性能 VPS
+- **Vultr**：全球分佈的 VPS
+
+#### 2. 平台即服務 (PaaS)
+- **Heroku**：簡單的應用部署平台
+- **Railway**：現代化的部署平台
+- **Render**：全棧雲平台
+- **Vercel**：主要用於前端，但也支援 Node.js API
+
+#### 3. 容器化部署
+- **Docker + Docker Hub**
+- **Kubernetes**
+- **AWS ECS/EKS**
+
+#### 部署步驟示例（以 Ubuntu 服務器為例）
+
+```bash
+# 1. 在服務器上安裝 Node.js 和 npm
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 2. 克隆專案
+git clone https://github.com/yourusername/express-qrcode-shortner.git
+cd express-qrcode-shortner
+
+# 3. 安裝依賴
+npm install
+
+# 4. 設置環境變數
+cp .env.example .env
+# 編輯 .env 文件，設置 MONGODB_URI 等
+
+# 5. 安裝 PM2
+npm install -g pm2
+
+# 6. 啟動應用
+pm2 start index.js --name "url-shortener"
+
+# 7. 設置開機自啟
+pm2 startup
+pm2 save
+
+# 8. 配置防火牚牆（開放 3000 端口或你設置的端口）
+sudo ufw allow 3000
+```
+
+#### 域名和反向代理
+
+在生產環境中，通常會：
+1. 購買域名（如 `yourdomain.com`）
+2. 使用 Nginx 作為反向代理
+3. 配置 SSL 證書（Let's Encrypt）
+
+```nginx
+# Nginx 配置示例
+server {
+    listen 80;
+    server_name yourdomain.com;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### 監控和維護
+
+```bash
+# 查看應用狀態
+pm2 monit
+
+# 查看詳細信息
+pm2 show url-shortener
+
+# 重載應用（零停機時間）
+pm2 reload url-shortener
+
+# 查看錯誤日誌
+pm2 logs url-shortener --err
 ```
 
 ## 貢獻
