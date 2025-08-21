@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const Url = require('./models/Url');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 // 配置 CORS
 app.use(cors({
@@ -40,39 +40,39 @@ mongoose.connect(mongoURI, {
   connectTimeoutMS: 10000,
   socketTimeoutMS: 45000
 })
-.then(async () => {
-  console.log('成功連接到 MongoDB');
-  
-  try {
-    // 檢查資料庫連接狀態
-    console.log('MongoDB 連接狀態:', mongoose.connection.readyState);
-    
-    // 列出所有資料庫
-    const dbs = await mongoose.connection.db.admin().listDatabases();
-    console.log('可用的資料庫:', dbs.databases.map(db => db.name));
-    
-    // 檢查 url-shortener 資料庫
-    const db = mongoose.connection.db;
-    const collections = await db.listCollections().toArray();
-    console.log('url-shortener 資料庫中的集合:', collections.map(c => c.name));
-    
-    // 檢查 urls 集合
-    const urlsCollection = db.collection('urls');
-    const count = await urlsCollection.countDocuments();
-    console.log(`urls 集合中的文檔數量: ${count}`);
-    
-    // 檢查索引
-    const indexes = await urlsCollection.indexes();
-    console.log('urls 集合的索引:', JSON.stringify(indexes, null, 2));
-  } catch (err) {
-    console.error('檢查資料庫時出錯:', err);
-  }
-})
-.catch(err => {
-  console.error('MongoDB 連接錯誤:', err);
-  console.error('連線字串:', mongoURI.replace(/:([^:]+)@/, ':******@'));
-  process.exit(1);
-});
+  .then(async () => {
+    console.log('成功連接到 MongoDB');
+
+    try {
+      // 檢查資料庫連接狀態
+      console.log('MongoDB 連接狀態:', mongoose.connection.readyState);
+
+      // 列出所有資料庫
+      const dbs = await mongoose.connection.db.admin().listDatabases();
+      console.log('可用的資料庫:', dbs.databases.map(db => db.name));
+
+      // 檢查 url-shortener 資料庫
+      const db = mongoose.connection.db;
+      const collections = await db.listCollections().toArray();
+      console.log('url-shortener 資料庫中的集合:', collections.map(c => c.name));
+
+      // 檢查 urls 集合
+      const urlsCollection = db.collection('urls');
+      const count = await urlsCollection.countDocuments();
+      console.log(`urls 集合中的文檔數量: ${count}`);
+
+      // 檢查索引
+      const indexes = await urlsCollection.indexes();
+      console.log('urls 集合的索引:', JSON.stringify(indexes, null, 2));
+    } catch (err) {
+      console.error('檢查資料庫時出錯:', err);
+    }
+  })
+  .catch(err => {
+    console.error('MongoDB 連接錯誤:', err);
+    console.error('連線字串:', mongoURI.replace(/:([^:]+)@/, ':******@'));
+    process.exit(1);
+  });
 
 // 驗證 URL 的輔助函式
 const isValidUrl = (url) => {
@@ -93,7 +93,7 @@ app.get('/', (req, res) => {
 app.post('/api/short-urls', async (req, res) => {
   console.log('收到請求:', req.body);
   const { url } = req.body;
-  
+
   if (!url) {
     console.log('缺少 URL 參數');
     return res.status(400).json({
@@ -110,28 +110,28 @@ app.post('/api/short-urls', async (req, res) => {
   try {
     const { nanoid } = await import('nanoid');
     const code = nanoid(6);
-    
+
     const newUrl = new Url({
       code,
       longUrl: url
     });
 
     console.log('準備儲存新的 URL:', { code, url });
-    
+
     try {
       const savedUrl = await newUrl.save();
       console.log('URL 已儲存到資料庫:', savedUrl);
-      
+
       // 確認文檔是否真的存在於集合中
       const foundDoc = await mongoose.connection.db.collection('urls').findOne({ _id: savedUrl._id });
       console.log('從資料庫查詢到的文檔:', foundDoc);
-      
+
       res.status(201).json({
-      code,
-      shortUrl: `http://localhost:${port}/${code}`,
-      longUrl: url,
-      createdAt: savedUrl.createdAt,
-    });
+        code,
+        shortUrl: `http://localhost:${port}/${code}`,
+        longUrl: url,
+        createdAt: savedUrl.createdAt,
+      });
     } catch (saveError) {
       console.error('儲存 URL 時出錯:', saveError);
       res.status(500).json({
@@ -175,7 +175,7 @@ app.get('/api/short-urls/:code', async (req, res) => {
 // 測試路由：手動寫入數據到數據庫
 app.get('/test-write', async (req, res) => {
   console.log('\n=== 開始測試寫入 ===');
-  
+
   try {
     const { nanoid } = await import('nanoid');
     const code = nanoid(6);
@@ -184,20 +184,20 @@ app.get('/test-write', async (req, res) => {
       longUrl: 'https://example.com/test',
       hitCount: 0
     };
-    
+
     console.log('準備寫入測試數據:', testData);
-    
+
     // 方法1：使用 create()
     console.log('方法1: 使用 create()');
     const createdUrl = await Url.create(testData);
     console.log('使用 create() 創建的文檔:', createdUrl);
-    
+
     // 方法2：使用 save()
     console.log('\n方法2: 使用 save()');
     const testUrl = new Url(testData);
     const savedUrl = await testUrl.save();
     console.log('使用 save() 保存的文檔:', savedUrl);
-    
+
     // 方法3：直接使用 MongoDB 驅動程序
     console.log('\n方法3: 使用 MongoDB 原生驅動');
     const db = mongoose.connection.db;
@@ -207,15 +207,15 @@ app.get('/test-write', async (req, res) => {
       createdAt: new Date()
     });
     console.log('原生驅動插入結果:', insertResult);
-    
+
     // 從數據庫讀取以確認
     console.log('\n查詢數據庫中的文檔...');
     const urls = await Url.find({}).lean();
     console.log('數據庫中的所有文檔:', JSON.stringify(urls, null, 2));
-    
+
     const found = await Url.findOne({ _id: savedUrl._id });
     console.log('使用 findOne 查詢的結果:', found);
-    
+
     res.json({
       success: true,
       message: '測試數據已寫入數據庫',
@@ -227,12 +227,12 @@ app.get('/test-write', async (req, res) => {
     });
   } catch (error) {
     console.error('測試寫入時出錯:', error);
-    
+
     // 檢查錯誤類型
     if (error.name === 'MongoServerError' && error.code === 11000) {
       console.error('重複鍵錯誤 - 文檔已存在');
     }
-    
+
     res.status(500).json({
       success: false,
       message: '寫入測試數據時出錯',
@@ -272,24 +272,24 @@ app.get('/:code', async (req, res) => {
 
 // 生成 QR Code
 app.get('/api/qrcode/:code', async (req, res) => {
-    const { code } = req.params;
-    const shortUrlData = await Url.findOne({ code });
+  const { code } = req.params;
+  const shortUrlData = await Url.findOne({ code });
 
-    if (!shortUrlData) {
-        return res.status(404).json({
-            error: { code: 'ERR_NOT_FOUND', message: '短碼不存在' },
-        });
-    }
+  if (!shortUrlData) {
+    return res.status(404).json({
+      error: { code: 'ERR_NOT_FOUND', message: '短碼不存在' },
+    });
+  }
 
-    const shortUrl = `http://localhost:${port}/${code}`;
-    try {
-        const qrCodeImage = await qrcode.toBuffer(shortUrl);
-        res.setHeader('Content-Type', 'image/png');
-        res.send(qrCodeImage);
-    } catch (err) {
-        console.error('生成 QR Code 時出錯:', err);
-        res.status(500).json({ error: 'Failed to generate QR code' });
-    }
+  const shortUrl = `http://localhost:${port}/${code}`;
+  try {
+    const qrCodeImage = await qrcode.toBuffer(shortUrl);
+    res.setHeader('Content-Type', 'image/png');
+    res.send(qrCodeImage);
+  } catch (err) {
+    console.error('生成 QR Code 時出錯:', err);
+    res.status(500).json({ error: 'Failed to generate QR code' });
+  }
 });
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
