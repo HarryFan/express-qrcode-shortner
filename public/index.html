@@ -105,25 +105,23 @@
     </div>
 
     <script>
-      // 動態獲取當前域名和端口
-      const baseURL = window.location.origin;
+        // 使用相對路徑，自動適應當前域名
+        document.getElementById('shorten-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = document.getElementById('url-input').value;
+            const response = await fetch('/api/short-urls', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url }),
+            });
 
-      document.getElementById('shorten-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        const url = document.getElementById('url-input').value;
-        const response = await fetch('/api/short-urls', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url }),
-        });
-
-        const resultDiv = document.getElementById('result');
-        if (response.ok) {
-          const data = await response.json();
-          const shortUrl = `${window.location.origin}/${data.code}`;
-          resultDiv.innerHTML = `
+            const resultDiv = document.getElementById('result');
+            if (response.ok) {
+                const data = await response.json();
+                const shortUrl = `${window.location.origin}/${data.code}`;
+                resultDiv.innerHTML = `
                     <h3>您的短網址已建立！</h3>
                     <div class="short-url">
                         <span>短網址：</span>
@@ -135,11 +133,11 @@
                     </div>
                     <button class="copy-btn" onclick="copyToClipboard('${shortUrl}')">複製短網址</button>
                 `;
-        } else {
-          const error = await response.json();
-          resultDiv.innerHTML = `<p>Error: ${error.error.message}</p>`;
-        }
-      });
+            } else {
+                const error = await response.json();
+                resultDiv.innerHTML = `<p>Error: ${error.error.message}</p>`;
+            }
+        });
 
       function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {

@@ -126,9 +126,10 @@ app.post('/api/short-urls', async (req, res) => {
       const foundDoc = await mongoose.connection.db.collection('urls').findOne({ _id: savedUrl._id });
       console.log('從資料庫查詢到的文檔:', foundDoc);
 
+      const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
       res.status(201).json({
         code,
-        shortUrl: `http://localhost:${port}/${code}`,
+        shortUrl: `${baseUrl}/${code}`,
         longUrl: url,
         createdAt: savedUrl.createdAt,
       });
