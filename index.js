@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const Url = require('./models/Url');
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = process.env.PORT;
 
 // 配置 CORS
 app.use(cors({
